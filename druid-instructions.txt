@@ -1,0 +1,129 @@
+ready the metastore : 
+
+download the mysql connector jar 
+/home/jaggu/programs/mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar
+
+
+create a symlink ( ln -s source target) or copy the jar to 
+
+apache-druid-0.18.0/extensions/mysql-metadata-storage/
+
+install MYSQL and setup the user: 
+
+sudo apt-get update
+sudo apt-get install mysql-server
+
+sudo mysql -u root
+   
+UPDATE mysql.user SET Password=PASSWORD("mysql") WHERE User="root";
+
+FLUSH PRIVILEGES;
+
+-- create a druid database, make sure to use utf8mb4 as encoding
+CREATE DATABASE druid DEFAULT CHARACTER SET utf8mb4;
+
+-- create a druid user
+CREATE USER 'druid'@'localhost' IDENTIFIED BY 'druid';
+
+-- grant the user all the permissions on the database we just created
+GRANT ALL PRIVILEGES ON druid.* TO 'druid'@'localhost';
+
+FLUSH PRIVILEGES;
+
+
+-- config folder: /home/jaggu/programs/apache-druid-0.18.0/conf/druid/single-server/nano-quickstart/_common
+initialize the MYSQL metadata tables: 
+
+cd ${DRUID_ROOT}
+
+java -classpath "lib/*" -Dlog4j.configurationFile=conf/druid/single-server/nano-quickstart/_common/log4j2.xml -Ddruid.extensions.directory="extensions" -Ddruid.extensions.loadList=[\"mysql-metadata-storage\"] -Ddruid.metadata.storage.type=mysql org.apache.druid.cli.Main tools metadata-init --connectURI="jdbc:mysql://localhost:3306/druid?serverTimezone=IST" --user druid --password druid --base druid
+
+
+-- export the metadata to local csv files
+
+
+cd ${DRUID_ROOT}
+mkdir -p /tmp/csv
+
+java -classpath "lib/*" -Dlog4j.configurationFile=conf/druid/single-server/nano-quickstart/_common/log4j2.xml -Ddruid.extensions.directory="extensions" -Ddruid.extensions.loadList=[] org.apache.druid.cli.Main tools export-metadata --connectURI "jdbc:derby://localhost:1527/var/druid/metadata.db;" -o /tmp/csv
+
+
+-- ignore the <tablename>_raw.csv files generated at /tmp/csv 
+
+
+-- OPEN MYSQL and run the below : 
+
+mysql -u druid -p --local-infile druid
+
+LOAD DATA LOCAL INFILE '/tmp/csv/druid_segments.csv' INTO TABLE druid_segments FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' (id,dataSource,created_date,start,end,partitioned,version,used,payload); SHOW WARNINGS;
+
+LOAD DATA LOCAL INFILE '/tmp/csv/druid_rules.csv' INTO TABLE druid_rules FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' (id,dataSource,version,payload); SHOW WARNINGS;
+
+LOAD DATA LOCAL INFILE '/tmp/csv/druid_config.csv' INTO TABLE druid_config FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' (name,payload); SHOW WARNINGS;
+
+LOAD DATA LOCAL INFILE '/tmp/csv/druid_dataSource.csv' INTO TABLE druid_dataSource FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' (dataSource,created_date,commit_metadata_payload,commit_metadata_sha1); SHOW WARNINGS;
+
+LOAD DATA LOCAL INFILE '/tmp/csv/druid_supervisors.csv' INTO TABLE druid_supervisors FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' (id,spec_id,created_date,payload); SHOW WARNINGS;
+
+
+get the JDBC URL, username, password 
+
+
+
+find the _commom/common.runtime.properties file
+
+
+include extension : (if there are any existing properties, then use comma seperated values)
+
+druid.extensions.loadList=["mysql-metadata-storage"]
+
+find below : 
+druid.metadata.storage.type=mysql
+druid.metadata.storage.connector.connectURI=jdbc:mysql://db.example.com:3306/druid
+druid.metadata.storage.connector.user=...
+druid.metadata.storage.connector.password=...
+
+
+replace with : 
+
+
+druid.metadata.storage.type=mysql
+druid.metadata.storage.connector.connectURI=jdbc:mysql://localhost:3306/druid?serverTimezone=IST
+druid.metadata.storage.connector.user=druid
+druid.metadata.storage.connector.password=druid
+
+
+
+
+
+-- DRUID HIVE INTEGRATION - configure below in hive site xml
+hive.druid.bitmap.type=roaring
+hive.druid.broker.address.default=localhost:8888
+hive.druid.coordinator.address.default=localhost:8081
+hive.druid.http.numConnection=20
+hive.druid.http.read.timeout=PT1M
+hive.druid.indexer.memory.rownum.max=75000
+hive.druid.indexer.partition.size.max=1000000
+hive.druid.indexer.segments.granularity=DAY
+hive.druid.maxTries=5
+hive.druid.metadata.base=druid
+hive.druid.metadata.db.type=mysql
+hive.druid.metadata.password=druid
+hive.druid.metadata.uri=jdbc:mysql://localhost:3306/druid?serverTimezone=IST
+hive.druid.metadata.username=druid
+hive.druid.passiveWaitTimeMs=30000
+hive.druid.select.distribute=true
+hive.druid.select.threshold=10000
+hive.druid.sleep.time=PT10S
+hive.druid.storage.storageDirectory=/druid/segments
+hive.druid.working.directory=/tmp/druidwd
+
+
+
+
+
+CREATE EXTERNAL TABLE druid_table_1
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.datasource" = "wiki");
+
+

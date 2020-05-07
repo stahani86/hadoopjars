@@ -1,0 +1,96 @@
+
+sudo apt-get update
+sudo apt-get install mysql-server
+
+sudo mysql -u root
+
+-- create a hive database, make sure to use utf8mb4 as encoding
+CREATE DATABASE hadoop DEFAULT CHARACTER SET utf8mb4;
+
+-- create a hive user
+CREATE USER 'jaggu'@'localhost' IDENTIFIED BY 'jaggu';
+
+-- grant the user all the permissions on the database we just created
+GRANT ALL PRIVILEGES ON hadoop.* TO 'jaggu'@'localhost';
+
+FLUSH PRIVILEGES;	
+
+
+download the jar file and copy it to SQOOP lib directory
+JDBC JAR : /home/jaggu/programs/mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar
+
+JDBC URL : jdbc:mysql://localhost:3306/hadoop
+JDBC DRIVER : com.mysql.jdbc.Driver
+JDBC USERNAME : jaggu
+JDBC PASSWORD : jaggu
+JDBC DBNAME : hadoop
+
+
+
+sqoop-import
+sqoop-export
+sqoop-eval
+sqoop-job
+
+
+sqoop list-databases \
+--username jaggu \
+--password jaggu \
+--driver com.mysql.cj.jdbc.Driver \
+--connect jdbc:mysql://localhost:3306/hadoop?serverTimezone=IST
+
+
+PRIMARY KEY  m 10
+
+sqoop import \
+--username jaggu \
+--password jaggu \
+--driver com.mysql.cj.jdbc.Driver \
+--connect jdbc:mysql://localhost:3306/hadoop?serverTimezone=IST \
+--table emp \
+--split-by id \
+--m 2 \
+--target-dir /user/sqoop/emp
+
+
+No primary key could be found for table emp. 
+Please specify one with --split-by or perform a sequential import with '-m 1'.
+
+sqoop import \
+--username jaggu \
+--password jaggu \
+--driver com.mysql.cj.jdbc.Driver \
+--connect jdbc:mysql://localhost:3306/hadoop?serverTimezone=IST \
+--table emp \
+--m 1 \
+--target-dir /user/sqoop/emp_1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

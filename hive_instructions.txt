@@ -1,0 +1,92 @@
+
+
+sudo apt-get update
+sudo apt-get install mysql-server
+
+sudo mysql -u root
+
+-- create a hive database, make sure to use utf8mb4 as encoding
+CREATE DATABASE hive DEFAULT CHARACTER SET utf8mb4;
+
+-- create a hive user
+CREATE USER 'hive'@'localhost' IDENTIFIED BY 'hive';
+
+-- grant the user all the permissions on the database we just created
+GRANT ALL PRIVILEGES ON hive.* TO 'hive'@'localhost';
+
+
+
+-- METASTORE RELATED TO MYSQL 
+
+download mysql java connector and create soft link to lib folder
+
+ln -s /home/jaggu/programs/mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar $HIVE_HOME/lib/mysql-connector-java-8.0.19.jar
+
+ls $HIVE_HOME/lib/mysql-connector-java-8.0.19.jar
+
+
+
+Configure below in hive-site.xml
+
+  <property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://localhost:9083</value>
+    <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
+  </property>
+
+   <property>
+      <name>javax.jdo.option.ConnectionURL</name>
+      <value>jdbc:mysql://localhost:3306/hive?createDatabaseIfNotExist=true</value>
+      <description>metadata is stored in a MySQL server</description>
+   </property>
+
+   <property>
+      <name>javax.jdo.option.ConnectionDriverName</name>
+      <value>com.mysql.jdbc.Driver</value>
+      <description>MySQL JDBC driver class</description>
+   </property>
+
+   <property>
+      <name>javax.jdo.option.ConnectionUserName</name>
+      <value>hive</value>
+      <description>user name for connecting to mysql server</description>
+   </property>
+
+   <property>
+      <name>javax.jdo.option.ConnectionPassword</name>
+      <value>hive</value>
+      <description>password for connecting to mysql server</description>
+   </property>
+   
+   
+   
+   -- initialize the schema tool
+   
+ schematool -dbType mysql -initSchema
+   
+   -- starting the hive metastore service 
+   
+   nohup hive --service metastore &
+
+
+Second, run the following commands:
+
+ $ schematool -dbType mysql -initSchema  
+ $ schematool -dbType mysql -info
+
+   
+   
+   for DRUID integration : 
+   
+   
+-- create a druid database, make sure to use utf8mb4 as encoding
+CREATE DATABASE druid DEFAULT CHARACTER SET utf8mb4;
+
+-- create a druid user
+CREATE USER 'druid'@'localhost' IDENTIFIED BY 'druid';
+
+-- grant the user all the permissions on the database we just created
+GRANT ALL PRIVILEGES ON druid.* TO 'druid'@'localhost';
+
+
+

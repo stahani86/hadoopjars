@@ -1,0 +1,241 @@
+-------------26-October-2018--- starts-------
+
+1) in ubuntu
+
+In .bashrc configure 3 env variables
+
+JAVA_HOME
+
+HADOOP_HOME
+
+PATH=$PATH:pathTojava/bin:pathToHadoop/bin:pathToHadoop/sbin
+
+
+2)
+Get a older copy of cloudera(5.5) and launch VM
+jps
+
+how?
+ in google, type
+"cloudera quickstart vm 5.5 download"
+
+load this into Oracle Virtual Box
+
+3) check the versions of hadoop components available as part of cloudera 5.5
+
+
+-------------26-October-2018--- ends-----
+
+
+-------------30-October-2018---- starts-----
+
+1) core-site.xml
+
+<configuration>
+
+	<property>
+		<name>fs.defaultFS</name>
+		<value>hdfs://localhost:9000</value>
+	</property>
+
+</configuration>
+
+
+2) hdfs-site.xml
+
+<configuration>
+
+	<property>
+		<name>dfs.replication</name>
+		<value>3</value>
+	</property>
+
+	<property>
+		<name>dfs.namenode.name.dir</name>
+		<value>/home/jaggu/programs/hadoop-2.10.0/hadoop_name</value>
+	</property>
+
+	<property>
+		<name>dfs.datanode.data.dir</name>
+		<value>/home/jaggu/programs/hadoop-2.10.0/hadoop_data</value>
+	</property>
+
+</configuration>
+
+3) mapred-site.xml.template
+<configuration>
+	<property>
+		<name>dfs.replication</name>
+		<value>3</value>
+	</property>
+</configuration>
+
+4) yarn-site.xml
+
+<configuration>
+	<property>
+		<name>yarn.nodemanager.aux-services</name>
+		<value>mapreduce_shuffle</value>
+	</property>
+</configuration>
+
+-------------30-October-2018---- ends-----
+
+
+------------02-Nov-2018 starts------
+
+file:///D:/Users/Jigar/work
+
+
+file:///D:/Users/Jigar/work
+file:///Users/Jigar/work
+
+schema:authority/path
+
+
+HDFS path  :
+
+file:///D:/Users/Jigar/work/sample.csv
+
+
+hdfs://authority/path
+
+hdfs://localhost:9000/user/jigar/sample.csv
+
+
+
+sensor data : 1918 - 2018 
+
+folder - > files 100 (100GB, 200 GB, ..., 567GB.... 27 TB)
+
+1918_sensorData.dat
+...
+2018_sensorData.dat
+
+1918 45
+1919 46
+.
+.
+.
+2018 39
+
+100 GB 1918 
+
+27 TB/100 GB 2018  2700 files --> 2018 
+
+3000 nodes ---> 1 file output
+
+1-> 1918 45
+2-> 1919 46 
+3-> 1919 39
+...
+2998-> 2018 27 
+2999-> 2018 32
+3000-> 2018 39
+
+
+Grouping 
+
+1-> 1918 45
+2-> 1919 [46,39]
+......
+.....
+3000-> 2018 [27, 32, 39]
+
+Final Output
+
+1918 45
+1919 46
+.
+2018 39
+
+
+
+1265327637462378239237_hsgdyustdywtuwet_36_wuegweuywuty 2018 36
+1265327637462378239237_hsgdyustdywtuwet_32_wuegweuywuty
+
+1265327637462378239237_hsgdyustdywtuwet_27_wuegweuywuty 2018 27
+1265327637462378239237_hsgdyustdywtuwet_26_wuegweuywuty
+
+1265327637462378239237_hsgdyustdywtuwet_36_wuegweuywuty 2018 39
+1265327637462378239237_hsgdyustdywtuwet_39_wuegweuywuty
+
+
+Hadoop Framework (MR)
+
+HDFS
+
+/user/jigar/data/input/ ....
+
+
+.jar -> in edge node 
+
+1) Driver class with main method
+2) Mapper class
+3) Reducer class
+
+wordcount.jar file
+
+yarn jar wordcount.jar com.tcs.Driver inputFilePath outputFolder
+
+inputFilePath can be a folder, individual files
+
+
+-- 16 Nov 2018 -----starts
+
+steps to set the build path for hadoop libraries
+
+note that my HADOOP_HOME=/home/jaggu/hadoop-2.8.1
+
+jar entries are as follows:
+
+1) $HADOOP_HOME/share/hadoop/common/lib/*.jar
+2) $HADOOP_HOME/share/hadoop/common/*.jar
+3) $HADOOP_HOME/share/hadoop/hdfs/*.jar
+4) $HADOOP_HOME/share/hadoop/mapreduce/*.jar
+5) $HADOOP_HOME/share/hadoop/yarn/*.jar
+
+-- 16 Nov 2018 -----ends
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
